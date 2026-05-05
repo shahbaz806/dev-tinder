@@ -8,7 +8,7 @@ app.get("/user", (req, res) => {
 
 
 app.post("/test", (req, res) => {
-  res.send("test");
+  res.send("test ru");
 });
 
  
