@@ -3,4 +3,6 @@
 - [x] Run npm install
 - [ ] Verify signup flow by running server and/or quick request tests
 
+mongodb+srv://shahbaz85116_db_user:FaCAxrVnJlXukN3S@namastenode.kyhynj3.mongodb.net/?appName=namasteNode
+
 
