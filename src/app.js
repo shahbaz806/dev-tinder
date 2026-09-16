@@ -1,12 +1,7 @@
 const express = require("express");
 const connectDb = require("./config/database");
 const app = express();
-const User = require("./modals/user");
-const { validateSignUpData } = require("./utils/validation");
-const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
-const jwt = require("jsonwebtoken");
-const { userAuth } = require("../src/middlewarse/auth");
 const dns = require("dns");
 
 dns.setServers(["1.1.1.1", "8.8.8.8"]);
@@ -14,67 +9,13 @@ dns.setServers(["1.1.1.1", "8.8.8.8"]);
 app.use(express.json());
 app.use(cookieParser());
 
-app.post("/signup", async (req, res) => {
-  try {
-    // validation of data
-    validateSignUpData(req);
-    //encrypted password
-    const { firstName, lastName, emailId, password } = req.body;
-    const passwordHash = await bcrypt.hash(password, 10);
-    const user = new User({
-      firstName,
-      lastName,
-      emailId,
-      password: passwordHash,
-    });
-    await user.save();
-    res.send("user added successfully");
-  } catch (err) {
-    res.status(400).send("ERROR:" + err.message);
-  }
-});
+const authRouter = require("./routes/auth");
+const profileRouter = require("./routes/profile");
+const requestRouter = require("./routes/request");
 
-app.post("/login", async (req, res) => {
-  try {
-    const { emailId, password } = req.body;
-    const user = await User.findOne({ emailId: emailId });
-    if (!user) {
-      throw new Error("Invalid credential");
-    }
-    const isPasswordValid = await user.validatePassword(password);
-    if (isPasswordValid) {
-      // create a jwt token
-      const token = await user.getJWT();
-
-      // add the token to cookie and send the response back to the user
-      res.cookie("token", token, {
-        expires: new Date(Date.now() + 8 * 36000),
-      });
-      res.send("Login Successfull");
-    } else {
-      throw new Error("Invalid credential");
-    }
-  } catch (err) {
-    res.status(400).send("ERROR:" + err.message);
-  }
-});
-
-app.get("/profile", userAuth, async (req, res) => {
-  try {
-    const user = req.user;
-    if (!user) {
-      throw new Error("Logged in again");
-    }
-    res.send(user);
-  } catch (err) {
-    res.status(400).send("ERROR:" + err.message);
-  }
-});
-
-app.post("/sendConnectionRequest", userAuth, async (req, res) => {
-  const user = req.user;
-  res.send(user.firstName + "send the request");
-});
+app.use("/", authRouter);
+app.use("/", profileRouter);
+app.use("/", requestRouter);
 
 connectDb()
   .then(() => {
