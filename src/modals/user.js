@@ -1,13 +1,12 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
-
+const bcrypt = require("bcrypt");
 
 const userSchema = new mongoose.Schema(
   {
     firstName: {
       type: String,
       required: true,
-       
     },
     lastName: {
       type: String,
@@ -25,7 +24,6 @@ const userSchema = new mongoose.Schema(
           throw new Error("invalid email address:" + value);
         }
       },
-
     },
     password: {
       type: String,
@@ -34,8 +32,7 @@ const userSchema = new mongoose.Schema(
         if (!validator.isStrongPassword(value)) {
           throw new Error("enter strong  password :" + value);
         }
-      }
-
+      },
     },
     age: {
       type: Number,
@@ -46,6 +43,26 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+userSchema.methods.getJWT = async function () {
+  const user = this;
+  const token = jwt.sign({ _id: user._id }, "DEV@Tinder$799987", {
+    expiresIn: "1d",
+  });
+  return token;
+};
+
+userSchema.method = validatePassword = async function (
+  passwordInputByUser
+) {
+  const user = this;
+  const passwordHash = user.password;
+  const isPasswordValid = await bcrypt.compare(
+    passwordInputByUser,
+    passwordHash
+  );
+  return isPasswordHash;
+};
 
 const UserModel = mongoose.model("user", userSchema);
 module.exports = UserModel;
