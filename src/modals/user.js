@@ -49,6 +49,10 @@ const userSchema = new mongoose.Schema(
     skills: {
       type: [String],
     },
+
+    resetPasswordToken: String,
+    resetPasswordExpiry: Date,
+    
     photoUrl: {
       type: String,
       default: "https://geographyandyou.com/images/user-profile.png",
