@@ -1,0 +1,19 @@
+$kind: http-request
+name: profile/edit
+description: ""
+url: http://localhost:3000/profile/edit
+method: PATCH
+body:
+  type: json
+  content: |-
+    {
+       
+         "firstNAme": "Elons",
+        "lastName": "Muskk",
+        "emailId": "elo123@gmail.com",
+        "gender": "male",
+        "age": "24",
+        "about": "tyis is default"
+       
+    }
+order: 3000

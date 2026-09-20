@@ -1,0 +1,14 @@
+$kind: http-request
+name: profile/view
+description: ""
+url: http://localhost:3000/profile/view
+method: GET
+body:
+  type: json
+  content: |-
+    {
+       
+        "emailId": "elon1232@gmail.com",
+        "password": "Password123!"
+    }
+order: 4000

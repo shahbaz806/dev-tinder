@@ -1,0 +1,15 @@
+$kind: http-request
+name: signup
+description: ""
+url: http://localhost:3000/signup
+method: POST
+body:
+  type: json
+  content: |-
+    {
+        "firstName": "elon",
+        "lastName": "musk",
+        "emailId": "elon1232@gmail.com",
+        "password": "Password123!"
+    }
+order: 1000
