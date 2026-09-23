@@ -5,4 +5,4 @@ url: 'http://localhost:3000/request/send/interested/{{toUserId}}'
 method: POST
 body:
   type: none
-order: 2000
+order: 3000

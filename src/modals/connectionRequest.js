@@ -3,11 +3,13 @@ const mongoose = require("mongoose");
 const connectionRequestSchema = new mongoose.Schema(
   {
     fromUserId: {
+      ref: "User",
       type: mongoose.Schema.Types.ObjectId,
       required: true,
     },
 
     toUserId: {
+      ref: "User",
       type: mongoose.Schema.Types.ObjectId,
       required: true,
     },
@@ -25,7 +27,7 @@ const connectionRequestSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-connectionRequestSchema.index({firstName:1, lastName:1})
+
 
 connectionRequestSchema.pre("save", function () {
   const connectionRequest = this;
@@ -35,7 +37,7 @@ connectionRequestSchema.pre("save", function () {
   }
 });
 const ConnectionRequestModel = new mongoose.model(
-  "ConnectionRequestModal",
+  "ConnectionRequest",
   connectionRequestSchema
 );
 module.exports = ConnectionRequestModel;

@@ -1,5 +1,5 @@
 $kind: http-request
-name: profile/view
+name: /user/request/recieved
 description: ""
 url: http://localhost:3000/profile/view
 method: GET
@@ -11,4 +11,4 @@ body:
         "emailId": "elon1232@gmail.com",
         "password": "Password123!"
     }
-order: 8000
+order: 7000

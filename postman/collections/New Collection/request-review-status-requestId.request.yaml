@@ -1,0 +1,6 @@
+$kind: http-request
+name: request/review/:status/:requestId
+description: ""
+url: 'http://localhost:3000/request/review/accepted/6ab0b300d25da2eb9c5973a8'
+method: POST
+order: 2000
