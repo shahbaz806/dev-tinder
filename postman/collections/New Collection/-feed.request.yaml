@@ -1,13 +1,14 @@
 $kind: http-request
+name: /feed
 description: ""
-url: http://localhost:3000/login
-method: POST
+url: http://localhost:3000/profile/view
+method: GET
 body:
   type: json
   content: |-
     {
        
-        "emailId": "elo123@gmail.com",
+        "emailId": "elon1232@gmail.com",
         "password": "Password123!"
     }
-order: 12000
+order: 6619
