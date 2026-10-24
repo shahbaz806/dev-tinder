@@ -18,22 +18,64 @@ profileRouter.get("/profile/view", userAuth, async (req, res) => {
   }
 });
 
+// profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
+//   console.log("EDIT PROFILE ROUTE HIT");
+//   console.log("Cookies:", req.cookies);
+//   console.log("Body:", req.body);
+//   try {
+//     if (!validateEditProfileData(req)) {
+//       throw new Error("invalid Edit Request");
+//     }
+
+//     const loggedInUser = req.user;
+//     Object.keys(req.body).forEach((key) => (loggedInUser[key] = req.body[key]));
+//     await loggedInUser.save();
+
+//     res.json({
+//       message: `${loggedInUser.firstName},your profile updated successfully`,
+//       data: loggedInUser,
+//     });
+//   } catch (err) {
+//     console.error("profile edit error:", err);
+//     res.status(500).json({ message: err.message });
+//   }
+// });
+
 profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
   try {
     if (!validateEditProfileData(req)) {
-      throw new Error("invalid Edit Request");
+      return res.status(400).json({
+        message: "Invalid edit request",
+      });
     }
 
     const loggedInUser = req.user;
-    Object.keys(req.body).forEach((key) => (loggedInUser[key] = req.body[key]));
+
+    const allowedFields = [
+      "firstName",
+      "lastName",
+      "photoUrl",
+      "gender",
+      "age",
+      "about",
+    ];
+
+    allowedFields.forEach((field) => {
+      if (req.body[field] !== undefined) {
+        loggedInUser[field] = req.body[field];
+      }
+    });
+
     await loggedInUser.save();
 
     res.json({
-      message: `${loggedInUser.firstName},your profile updated successfully`,
+      message: "Profile updated successfully",
       data: loggedInUser,
     });
   } catch (err) {
-    res.status(404).send("Error" + err.message);
+    res.status(500).json({
+      message: err.message,
+    });
   }
 });
 
@@ -54,8 +96,7 @@ profileRouter.post("/profile/password", async (req, res) => {
 
     await user.save();
 
-    const resetLink =
-      `http://localhost:3000/reset-password/${resetToken}`;
+    const resetLink = `http://localhost:3000/reset-password/${resetToken}`;
 
     console.log(resetLink);
 
@@ -72,7 +113,7 @@ profileRouter.patch("/reset-password/:token", async (req, res) => {
 
     const user = await User.findOne({
       resetPasswordToken: token,
-      resetPasswordExpiry: { $gt: Date.now() }
+      resetPasswordExpiry: { $gt: Date.now() },
     });
 
     if (!user) {

@@ -1,26 +1,36 @@
+
 const jwt = require("jsonwebtoken");
 const User = require("../modals/user");
+
 const userAuth = async (req, res, next) => {
   try {
-    // read the token from req cookies
-    const { token } = req.cookies;
+    const token = req.cookies?.token;
 
-    //validate tokem
-    const decodedObj = await jwt.verify(token, "DEV@Tinder$799987");
+    if (!token) {
+      return res.status(401).json({
+        message: "Token missing. Please login again.",
+      });
+    }
 
-    //find user
-    const { _id } = decodedObj;
-    const user = await User.findById(_id);
+    const decodedObj = jwt.verify(token, "DEV@Tinder$799987");
+
+    const user = await User.findById(decodedObj._id);
 
     if (!user) {
-      throw new Error("User not found");
+      return res.status(401).json({
+        message: "User not found. Please login again.",
+      });
     }
+
     req.user = user;
     next();
   } catch (err) {
-    res.status(400).send("token is not valid");
+    console.error("AUTH ERROR:", err.message);
+
+    return res.status(401).json({
+      message: "Invalid or expired token. Please login again.",
+    });
   }
 };
-module.exports = {
-  userAuth,
-};
+
+module.exports = { userAuth };

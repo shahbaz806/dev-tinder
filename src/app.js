@@ -1,10 +1,20 @@
+
 const express = require("express");
+const cors = require("cors");
 const connectDb = require("./config/database");
-const app = express();
 const cookieParser = require("cookie-parser");
 const dns = require("dns");
 
 dns.setServers(["1.1.1.1", "8.8.8.8"]);
+
+const app = express();
+
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true,
+  methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+}));
 
 app.use(express.json());
 app.use(cookieParser());
@@ -17,17 +27,16 @@ const userRouter = require("./routes/user");
 app.use("/", authRouter);
 app.use("/", profileRouter);
 app.use("/", requestRouter);
-app.use("/",userRouter);
-
-
+app.use("/", userRouter);
 
 connectDb()
   .then(() => {
-    console.log("Databse connected");
+    console.log("Database connected");
+
     app.listen(3000, () => {
-      console.log("server is running on port 3000.....");
+      console.log("Server running on port 3000");
     });
   })
   .catch((err) => {
-    console.log("not connected" + err.message);
+    console.error("Database connection failed:", err.message);
   });
