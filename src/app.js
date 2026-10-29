@@ -1,4 +1,5 @@
 require("dotenv").config();
+require("./utils/cronJob");
 const express = require("express");
 const cors = require("cors");
 const connectDb = require("./config/database");
@@ -8,6 +9,8 @@ const dns = require("dns");
 dns.setServers(["1.1.1.1", "8.8.8.8"]);
 
 const app = express();
+
+
 
 app.use(cors({
   origin: "http://localhost:5173",
