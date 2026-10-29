@@ -5,6 +5,8 @@ const User = require("../modals/user");
 
 const requestRouter = express.Router();
 
+const sendEmail = require("../utils/sendEmail");
+
 requestRouter.post(
   "/request/send/:status/:toUserId",
   // (req, res, next) => {
@@ -53,6 +55,9 @@ requestRouter.post(
       });
 
       const data = await connectionRequest.save();
+
+      const emailRes =  await sendEmail.run();
+      console.log(emailRes);
 
       res.json({
         message:

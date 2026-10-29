@@ -4,7 +4,7 @@ const { userAuth } = require("../middlewarse/auth");
 const ConnectionRequestModel = require("../modals/connectionRequest");
 const User = require("../modals/user");
 
-const USER_SAFE_DATA = "firstName lastName age skills about";
+ const USER_SAFE_DATA = "firstName lastName photoUrl age gender about skills";
 
 // get all the pending connection request for the logeIn user
 userRouter.get("/user/request/recieved", userAuth, async (req, res) => {
