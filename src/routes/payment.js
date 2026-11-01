@@ -4,10 +4,10 @@ const razorpayInstance = require("../utils/razorPay");
 const { userAuth } = require("../middlewarse/auth");
 const Payment = require("../modals/payment");
 const { memberShipAmount } = require("../utils/constant");
-const { validateWebhookSignature,} = require("razorpay/dist/utils/razorpay-utils");
+const {
+  validateWebhookSignature,
+} = require("razorpay/dist/utils/razorpay-utils");
 const User = require("../modals/user");
-
-
 
 paymentRouter.post("/payment/create", userAuth, async (req, res) => {
   try {
@@ -56,36 +56,44 @@ paymentRouter.post("/payment/webhook", async (req, res) => {
       process.env.RAZORPAY_WEBHOOK_SECRET
     );
 
-    if(!iswebhookValid) {
-    return res.status(400).json({ msg: "webhook signature is invalid" });
+    if (!iswebhookValid) {
+      return res.status(400).json({ msg: "webhook signature is invalid" });
     }
 
-    //update payment status in db 
+    //update payment status in db
     const paymentDetails = req.body.payload.payment.entity;
 
     const payment = await Payment.findOne({
-        orderId: paymentDetails.order_id,
-    })
+      orderId: paymentDetails.order_id,
+    });
     payment.status = paymentDetails.status;
     await payment.save();
 
-    const user = await User.findOne({_id: payment.userId})
-    user.isPremium  = true;
+    const user = await User.findOne({ _id: payment.userId });
+    user.isPremium = true;
     user.memberShipType = payment.notes.memberShipType;
     await user.save();
-    // update user as prmium 
-    //return success response in razorpay 
+    // update user as prmium
+    //return success response in razorpay
 
     // if(req.body.event == "payment.captured") {
 
     // }
 
     // if(req.body.event == "payment.failed") {
-        
+
     // }
   } catch (err) {
     return res.status(500).json({ msg: err.message });
   }
+});
+
+paymentRouter.get("/premium/verify", userAuth, async (req, res) => {
+  const user = req.user;
+  if (user.isPremium) {
+    return res.json({ isPremium: true });
+  }
+  return res.json({ isPremium: false });
 });
 
 module.exports = paymentRouter;
