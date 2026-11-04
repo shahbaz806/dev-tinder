@@ -107,6 +107,7 @@ const { userAuth } = require("../middlewarse/auth");
 const Payment = require("../modals/payment");
 const User = require("../modals/user");
 const { memberShipAmount } = require("../utils/constant");
+const crypto = require("crypto");
 
 const {
   validateWebhookSignature,
@@ -245,6 +246,128 @@ paymentRouter.post("/payment/webhook", async (req, res) => {
     });
   }
 });
+
+// VERIFY PAYMENT WITHOUT WEBHOOK
+paymentRouter.post("/payment/verify", userAuth, async (req, res) => {
+    try {
+      const {
+        razorpay_order_id,
+        razorpay_payment_id,
+        razorpay_signature,
+      } = req.body;
+  
+      if (
+        !razorpay_order_id ||
+        !razorpay_payment_id ||
+        !razorpay_signature
+      ) {
+        return res.status(400).json({
+          success: false,
+          msg: "Payment details are missing",
+        });
+      }
+  
+      // 1. Verify payment signature
+      const generatedSignature = crypto
+        .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+        .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+        .digest("hex");
+  
+      const generatedBuffer = Buffer.from(generatedSignature);
+      const receivedBuffer = Buffer.from(razorpay_signature);
+  
+      if (
+        generatedBuffer.length !== receivedBuffer.length ||
+        !crypto.timingSafeEqual(generatedBuffer, receivedBuffer)
+      ) {
+        return res.status(400).json({
+          success: false,
+          msg: "Invalid payment signature",
+        });
+      }
+  
+      // 2. Find payment belonging to logged-in user
+      const payment = await Payment.findOne({
+        orderId: razorpay_order_id,
+        userId: req.user._id,
+      });
+  
+      if (!payment) {
+        return res.status(404).json({
+          success: false,
+          msg: "Payment record not found",
+        });
+      }
+  
+      // 3. Fetch actual payment status from Razorpay
+      const razorpayPayment = await razorpayInstance.payments.fetch(
+        razorpay_payment_id
+      );
+  
+      // 4. Validate payment details
+      if (
+        razorpayPayment.order_id !== razorpay_order_id ||
+        Number(razorpayPayment.amount) !== Number(payment.amount) ||
+        razorpayPayment.currency !== payment.currency
+      ) {
+        return res.status(400).json({
+          success: false,
+          msg: "Payment details do not match",
+        });
+      }
+  
+      if (razorpayPayment.status !== "captured") {
+        return res.status(400).json({
+          success: false,
+          msg: "Payment is not captured yet",
+          paymentStatus: razorpayPayment.status,
+        });
+      }
+  
+      // 5. Prevent duplicate processing
+      if (payment.status === "captured") {
+        return res.json({
+          success: true,
+          msg: "Payment already verified",
+        });
+      }
+  
+      // 6. Update payment in database
+      payment.paymentId = razorpayPayment.id;
+      payment.status = "captured";
+      await payment.save();
+  
+      // 7. Activate premium
+      const user = await User.findById(payment.userId);
+  
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          msg: "User not found",
+        });
+      }
+  
+      user.isPremium = true;
+      user.memberShipType = payment.notes.memberShipType;
+  
+      await user.save();
+  
+      return res.json({
+        success: true,
+        msg: "Payment verified and premium activated",
+        isPremium: user.isPremium,
+        memberShipType: user.memberShipType,
+      });
+  
+    } catch (err) {
+      console.log("Payment Verification Error:", err.message);
+  
+      return res.status(500).json({
+        success: false,
+        msg: err.message,
+      });
+    }
+  });
 
 // VERIFY PREMIUM USER
 paymentRouter.get("/premium/verify", userAuth, async (req, res) => {
