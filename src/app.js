@@ -76,7 +76,7 @@ app.use(
 );
 
 // Other API requests
-app.use(express.json());
+app.use(express.json({ limit: "2mb" }));
 app.use(cookieParser());
 
 const authRouter = require("./routes/auth");

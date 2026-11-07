@@ -61,12 +61,27 @@ const userSchema = new mongoose.Schema(
     resetPasswordToken: String,
     resetPasswordExpiry: Date,
     
+    // photoUrl: {
+    //   type: String,
+    //   default: "https://geographyandyou.com/images/user-profile.png",
+    //   validate(value) {
+    //     if (!validator.isURL(value)) {
+    //       throw new Error("Invalid photo URL: " + value);
+    //     }
+    //   },
+    // },
     photoUrl: {
       type: String,
       default: "https://geographyandyou.com/images/user-profile.png",
+      maxlength: 1500000,
       validate(value) {
-        if (!validator.isURL(value)) {
-          throw new Error("Invalid photo URL: " + value);
+        const isBase64Image =
+          /^data:image\/(jpeg|jpg|png|webp);base64,/.test(value);
+    
+        const isValidUrl = validator.isURL(value);
+    
+        if (!isBase64Image && !isValidUrl) {
+          throw new Error("Invalid image URL or image data");
         }
       },
     },
